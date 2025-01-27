@@ -1,0 +1,42 @@
+groups:
+  - name: alert_rules
+    rules:
+      # Alert for Instance Down
+      - alert: InstanceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "Instance {{ $labels.instance }} has been down for more than 5 minutes."
+      
+      # Alert for Host Out of Memory
+      - alert: HostOutOfMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }} is running low on memory"
+          description: "The host {{ $labels.instance }} has less than 10% of its memory available."
+
+      # Alert for Host Out of Disk Space
+      - alert: HostOutOfDiskspace
+        expr: node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host {{ $labels.instance }} is running low on disk space"
+          description: "The host {{ $labels.instance }} has less than 10% disk space available."
+
+      # Alert for High CPU Load
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected on {{ $labels.instance }}"
+          description: "The CPU usage on {{ $labels.instance }} is above 80% for the last 2 minutes."
